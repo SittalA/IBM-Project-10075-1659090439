@@ -1,0 +1,422 @@
+SOURCE CODE:
+App.py
+importrequests
+from tensorflow.keras.preprocessingimport imagefrom tensorflow.keras.modelsimport load_modelimportnumpyasnp
+import pandas as pdimporttensorflowastf
+from flask import Flask, request, render_template, redirect, url_forimportos
+fromwerkzeug.utilsimportsecure_filename
+fromtensorflow.python.keras.backendimportset_session
+ 
+app=Flask(name)
+ 
+#load both the vegetable and fruit modelsmodel = load_model("vegetable.h5")model1=load_model("fruit.h5")
+ 
+#home page@app.route('/')defhome():
+returnrender_template('home.html')
+ 
+#prediction page@app.route('/predict')defpredict():
+returnrender_template('predict.html')
+ 
+@app.route('/predict1',methods=['POST'])defpredict1():
+ifrequest.method=='POST':
+# Get the file from post requestf=request.files['image']
+ 
+#Savethefileto./uploadsbasepath = os.path.dirname(file)file_path=os.path.join(
+basepath, 'uploads', secure_filename(f.filename))f.save(file_path)
+img=image.load_img(file_path,target_size=(128,128))
+ 
+x=image.img_to_array(img)x=np.expand_dims(x,axis=0)
+plant=request.form['plant']print(plant)if(plant=="vegetable"):
+preds = model.predict1(x)preds=np.argmax(preds)print(preds)
+df=pd.read_excel('precautions-veg.xlsx')print(df.iloc[preds[0]]['caution'])
+else:
+preds = model1.predict1(x)preds=np.argmax(preds)print(preds)
+df=pd.read_excel('precautions-fruits.xlsx')print(df.iloc[preds]['caution'])
+ 
+return df.iloc[preds]['caution']ifname=="main":
+home.html
+<!DOCTYPEhtml>
+<html>
+ 
+<head>
+<metacharset="UTF-8">
+<metaname="viewport"content="width=device-width,initial-scale=1">
+<title>PlantDiseasePrediction</title>
+<linkhref='https://fonts.googleapis.com/css?family=Pacifico'rel='stylesheet'type='text/css'>
+<linkhref='https://fonts.googleapis.com/css?family=Arimo'rel='stylesheet'type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Hind:300' rel='stylesheet'type='text/css'>
+<linkhref='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300'rel='stylesheet'type='text/css'>
+<linkrel="stylesheet"href="{{url_for('static',filename='css/final.css')}}">
+<linkhref='https://fonts.googleapis.com/css?family=Merriweather'rel='stylesheet'>
+<linkhref='https://fonts.googleapis.com/css?family=JosefinSans'rel='stylesheet'>
+<linkhref='https://fonts.googleapis.com/css?family=Montserrat'
+rel='stylesheet'>
+<style>
+.header{
+top:0;margin:0px;left:0px;right: 0px;position:fixed;
+background-color: #28272c;color: white;
+box-shadow: 0px 8px 4px grey;overflow:hidden;
+padding-left:20px;
+font-family: 'Josefin Sans';font-size:2vw;
+width: 100%;height:8%;
+text-align:center;
+}
+.topnav{overflow:hidden;
+background-color:#333;
+}
+ 
+.topnav-right a {float:left;color: #f2f2f2;text-align: center;padding:14px16px;
+text-decoration: none;font-size: 18px;
+}
+ 
+.topnav-right a:hover {background-color: #ddd;color:black;
+}
+ 
+.topnav-right a.active{background-color: #565961;color:white;
+}
+ 
+.topnav-right {float:right;
+padding-right:100px;
+}
+body{
+
+
+background-color:#ffffff;background-repeat: no-repeat;background-size:cover;background-position:0px0px;
+}
+.button{
+background-color: #28272c;border:none;
+color: white;padding: 15px 32px;text-align:center;
+text-decoration: none;display: inline-block;font-size: 16px;border-radius:12px;
+}
+.button:hover{
+box-shadow: 012px 16px0rgba(0,0,0,0.24),017px50px0rgba(0,0,0,0.19);
+}
+form{border:3pxsolid#f1f1f1;margin-left:400px;margin-right:400px;}
+ 
+input[type=text], input[type=password] {width:100%;
+padding: 12px 20px;display: inline-block;margin-bottom:18px;border: 1px solid #ccc;box-sizing:border-box;
+}
+ 
+button{
+background-color: #28272c;color:white;
+padding: 14px 20px;margin-bottom:8px;border: none;cursor: pointer;width:15%;
+border-radius:4px;
+}
+ 
+button:hover{opacity:0.8;
+}
+ 
+.cancelbtn{width:auto;
+
+padding: 10px 18px;background-color:#f44336;
+}
+ 
+.imgcontainer{
+text-align: center;margin:24px012px0;
+}
+ 
+img.avatar{width:30%;
+border-radius:50%;
+}
+.container {padding:16px;
+}
+ 
+span.psw {float:right;
+padding-top:16px;
+}
+ 
+/* Change styles for span and cancel button on extra small screens */@mediascreenand(max-width:300px){
+span.psw{display: block;float:none;
+}
+.cancelbtn{width:100%;
+}
+}
+ 
+.home{
+margin:80px;
+ 
+width: 84%;height: 500px;padding-top:10px;
+padding-left:30px;
+ 
+}
+.login{margin:80px;
+box-sizing: content-box;width:84%;
+height:420px;
+
+padding:30px;
+border:10pxsolid blue;
+}
+.left,.right{
+box-sizing: content-box;height: 400px;margin:20px;
+border:10px solidblue;
+}
+ 
+.mySlides{display:none;}img{vertical-align:middle;}
+/*Slideshowcontainer*/
+.slideshow-container {max-width: 1000px;position: relative;margin:auto;
+}
+ 
+/*Captiontext*/
+.text{
+color: #f2f2f2;font-size: 15px;padding: 8px 12px;position: absolute;bottom:8px;width:100%;
+text-align:center;
+}
+/*Thedots/bullets/indicators*/
+.dot{
+height: 15px;width: 15px;margin:02px;
+background-color: #bbb;border-radius: 50%;display:inline-block;
+transition:background-color0.6sease;
+}
+ 
+.active{
+background-color:#717171;
+}
+/*Fadinganimation*/
+.fade{
+-webkit-animation-name:fade;
+
+-webkit-animation-duration: 1.5s;animation-name:fade;
+animation-duration:1.5s;
+}
+ 
+@-webkit-keyframes fade {from{opacity:.4}
+to{opacity:1}
+}
+ 
+@keyframes fade {from{opacity:.4}
+to{opacity:1}
+}
+ 
+/* On smaller screens, decrease text size */@mediaonlyscreenand(max-width:300px){
+.text{font-size:11px}
+}
+</style>
+</head>
+ 
+<body style="font-family:'Times New Roman', Times, serif;background-color:#C2C5A8;">
+ 
+<divclass="header">
+<divstyle="width:50%;float:left;font-size:2vw;text-align:left;color:white;padding-top:1%">PlantDiseasePrediction</div>
+<divclass="topnav-right"style="padding-top:0.5%;">
+ 
+<aclass="active"href="{{url_for('home')}}">Home</a>
+<ahref="{{url_for('predict')}}">Predict</a>
+</div>
+</div>
+ 
+<divstyle="background-color:#ffffff;">
+<divstyle="width:60%;float:left;">
+<divstyle="font-size:50px;font-family:Montserrat;padding-left:20px;text-align:center;padding-top:10%;">
+<b>Detectifyourplant<br>isinfected!!</b></div><br>
+<div style="font-size:20px;font-family:Montserrat;padding-left:70px;padding-right:30px;text-align:justify;">Agriculture is one of the major sectors worlswide. Over the years it has developed and the use of new technologies andequipment replaced almost all the traditional methods of farming. The plantdiseases effect the production. Identification of diseases and taking necessary precautions is all done through naked eye, which requires labour and laboratries.This application helps farmers indetecting the diseases by
+Predict.html
+<metaname="viewport"content="width=device-width,initial-scale=1">
+<title>PlantDiseasePrediction</title>
+<link href='https://fonts.googleapis.com/css?family=Pacifico'rel='stylesheet'type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet'type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Hind:300' rel='stylesheet'type='text/css'>
+<linkhref="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css"rel="stylesheet">
+<scriptsrc="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js"></script>
+<scriptsrc="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<scriptsrc="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<linkhref='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300'rel='stylesheet'type='text/css'>
+<linkhref='https://fonts.googleapis.com/css?family=Merriweather'rel='stylesheet'>
+<linkhref='https://fonts.googleapis.com/css?family=JosefinSans'rel='stylesheet'>
+<linkhref='https://fonts.googleapis.com/css?family=Montserrat'rel='stylesheet'>
+<linkhref="{{url_for('static',filename='css/final.css')}}"rel="stylesheet">
+<style>
+.header{
+top:0;margin:0px;left:0px;right: 0px;position:fixed;
+background-color: #28272c;color:white;
+box-shadow: 0px 8px 4px grey;overflow: hidden;
+padding-left:20px;
+font-family: 'Josefin Sans';font-size:2vw;
+width: 100%;height:8%;
+text-align:center;
+}
+.topnav{overflow: hidden;background-color:#333;
+}
+ 
+.topnav-right a{
+
+float:left;color: #f2f2f2;text-align: center;padding:14px16px;
+text-decoration: none;font-size: 18px;
+}
+ 
+.topnav-right a:hover {background-color: #ddd;color:black;
+}
+ 
+.topnav-right a.active{background-color: #565961;color:white;
+}
+ 
+.topnav-right {float:right;
+padding-right:100px;
+}
+ 
+.login{
+margin-top:-70px;
+}
+body{
+ 
+background-color:#ffffff;background-repeat: no-repeat;background-size:cover;background-position:0px0px;
+}
+.login{
+margin-top:100px;
+}
+ 
+.container {margin-top:40px;padding:16px;
+}
+select{
+width:100%;
+margin-bottom:10px;
+background: rgba(255,255,255,255);border:none;
+outline: none;padding:10px;
+
+font-size: 13px;color:#000000;
+text-shadow: 1px 1px1pxrgba(0,0,0,0.3);border:1pxsolidrgba(0,0,0,0.3);
+border-radius:4px;
+box-shadow: inset 0 -5px 45px rgba(100,100,100,0.2), 0 1px 1pxrgba(255,255,255,0.2);
+-webkit-transition:box-shadow.5sease;
+-moz-transition:box-shadow.5sease;
+-o-transition:box-shadow.5sease;
+-ms-transition: box-shadow .5s ease;transition:box-shadow.5sease;
+}
+ 
+ 
+</style>
+</head>
+ 
+<bodystyle="font-family:Montserrat;overflow:scroll;">
+ 
+<divclass="header">
+<divstyle="width:50%;float:left;font-size:2vw;text-align:left;color:white;padding-top:1%">PlantDiseasePrediction</div>
+<divclass="topnav-right"style="padding-top:0.5%;">
+ 
+ 
+</div>
+</div>
+<divclass="container">
+<divid="content"style="margin-top:2em">
+<divclass="container">
+<divclass="row">
+<divclass="col-sm-6bd">
+ 
+<br>
+<imgsrc="{{url_for('static', filename='images/789.jpg')}}"style="height:450px;width:550px"class="img-rounded"alt="Gesture">
+</div>
+<divclass="col-sm-6">
+<div>
+<h4>Dropintheimage togettheprediction</h4>
+<form action = "" id="upload-file" method="post"enctype="multipart/form-data">
+<selectname="plant">
+ type</option>
+
+<optionvalue="select"selected>Selectplant
+<optionvalue="fruit">Fruit</option>
+<optionvalue="vegetable">Vegetable</option>
+</select><br>
+<label for="imageUpload" class="upload-label"style="background:black;">
+Choose...
+</label>
+<inputtype="file"name="image"id="imageUpload"accept=".png,
+.jpg,.jpeg">
+</form>
+<divclass="image-section"style="display:none;">
+<divclass="img-preview">
+<divid="imagePreview">
+</div>
+</div>
+<div>
+<button type="button" class="btnbtn-info btn-lg "id="btn-predict"style="background:#7cd0d3;">Predict!</button>
+</div>
+</div>
+ 
+<divclass="loader"style="display:none;"></div>
+ 
+<h3>
+<spanid="result"style="font-size:17px;"></span>
+</h3>
+ 
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+ 
+<footer>
+<scriptsrc="{{url_for('static',filename='js/main.js')}}"type="text/javascript"></script>
+</footer>
+</html>
+
+Final.css
+.img-preview {width:256px;
+height: 256px;position:relative;
+border:5pxsolid#F8F8F8;
+box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.1);margin-top:1em;
+margin-bottom:1em;
+}
+.img-preview>div {width:100%;
+height:100%;
+background-size: 256px 256px;background-repeat: no-repeat;background-position:center;
+}
+
+input[type="file"] {display:none;
+} 
+.upload-label{
+display: inline-block;padding: 12px 30px;background: #28272c;color:#fff;
+font-size: 1em;transition: all .4s;cursor:pointer;
+}
+
+.upload-label:hover{background: #C2C5A8;color:#39D2B4;
+} 
+.loader{
+border: 8px solid #f3f3f3; /* Light grey */border-top: 8px solid #28272c; /* Blue */border-radius:50%;
+width: 50px;height:50px;
+animation:spin1slinearinfinite;
+}
+ @keyframesspin{
+0% { transform: rotate(0deg); }100%{transform:rotate(360deg);}
+}
+Main.js
+$(document).ready(function(){
+//Init
+$('.image-section').hide();
+$('.loader').hide();
+$('#result').hide();
+ 
+// UploadPreviewfunctionreadURL(input){
+if (input.files&&input.files[0]) {var reader = new FileReader();reader.onload=function(e){
+$('#imagePreview').css('background-image', 'url(' +e.target.result+')');
+$('#imagePreview').hide();
+reader.readAsDataURL(input.files[0]);
+}
+}
+$("#imageUpload").change(function(){
+$('.image-section').show();
+$('#btn-predict').show();
+$('#result').text('');
+$('#result').hide();readURL(this);
+});
+//Predict
+$('#btn-predict').click(function(){
+varform_data=newFormData($('#upload-file')[0]);
+ 
+//Showloadinganimation
+$(this).hide();
+$('.loader').show();
+ 
+//Makepredictionbycallingapi/predict
+$.ajax({
+type: 'POST',url: '/predict',data:form_data,
+contentType: false,cache: false,processData: false,async:true,
+success:function(data){
+//Getanddisplaytheresult
+$('.loader').hide();
+$('#result').fadeIn(600);
+$('#result').text('Prediction:'+data);console.log('Success!');
+},
+});
+});
+});
